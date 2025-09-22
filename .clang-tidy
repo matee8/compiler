@@ -1,0 +1,10 @@
+---
+Checks: "*,
+        -abseil-*,
+        -fuchsia-*,
+        -llvmlibc-*,
+        -zircon-*,
+"
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none
