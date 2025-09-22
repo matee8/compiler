@@ -2,7 +2,7 @@
 -Werror
 -Wextra
 -pedantic
---std=c++20
+-std=c++20
 -g
 -O3
 -pipe

@@ -1,14 +1,23 @@
 ---
-Checks: "*,
-        -bugprone-easily-swappable-parameters,
-        -clang-analyzer-optin.cplusplus.VirtualCall,
-        -cppcoreguidelines-special-member-functions,
-        -hicpp-signed-bitwise,
-        -hicpp-special-member-functions,
-        -misc-include-cleaner,
-        -modernize-use-trailing-return-type,
-        -readability-identifier-length
-"
+Checks: >
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  -cppcoreguidelines-special-member-functions,
+  -hicpp-signed-bitwise,
+  -hicpp-special-member-functions,
+  -misc-include-cleaner,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: none
