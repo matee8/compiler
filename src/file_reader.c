@@ -52,7 +52,7 @@ int file_reader_read_all(struct file_reader* reader,
         return ferror(reader->file) ? -errno : -EIO;
     }
 
-    *content[(size_t)file_size] = '\0';
+    (*content)[(size_t)file_size] = '\0';
     *len = file_size;
 
     return 0;

@@ -5,6 +5,10 @@ Checks: "*,
         -llvmlibc-*,
         -zircon-*,
         -android-cloexec-fopen,
+        -bugprone-easily-swappable-parameters,
+        -readability-identifier-length,
+        -altera-unroll-loops,
+        -misc-include-cleaner,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
