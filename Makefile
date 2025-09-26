@@ -2,7 +2,7 @@ PROJECT_NAME = compiler
 
 SRC_DIR = src
 BIN_DIR = bin
-TEST_SRC_DIR = tests
+TEST_DIR = tests
 INC_DIR = include
 OBJ_DIR = obj
 BUILD_DIR = build
@@ -14,16 +14,16 @@ LDLIBS =
 
 APP_SRC = $(wildcard $(BIN_DIR)/*.c)
 LIB_SRC = $(wildcard $(SRC_DIR)/*.c)
-TEST_SRC = $(wildcard $(TEST_SRC_DIR)/*.c)
+TEST_SRC = $(wildcard $(TEST_DIR)/*.c)
 
 APP_OBJ = $(patsubst $(BIN_DIR)/%.c, $(OBJ_DIR)/%.o, $(APP_SRC))
 LIB_OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(LIB_SRC))
 
 OBJ = $(APP_OBJ) $(LIB_OBJ)
 
-TEST_TARGETS = $(patsubst $(TEST_SRC_DIR)/%.c, $(BUILD_DIR)/%, $(TEST_SRC))
+TEST_TARGETS = $(patsubst $(TEST_DIR)/%.c, $(BUILD_DIR)/%, $(TEST_SRC))
 
-CHECK_FILES = $(wildcard $(BIN_DIR)/*.c $(SRC_DIR)/*.c $(TEST_SRC_DIR)/*.c $(INC_DIR)/compiler/*.h)
+CHECK_FILES = $(wildcard $(BIN_DIR)/*.c $(SRC_DIR)/*.c $(TEST_DIR)/*.c $(INC_DIR)/compiler/*.h)
 TIDY_FILES = $(APP_SRC) $(LIB_SRC) $(TEST_SRC)
 
 .PHONY: all test clean check format-check tidy-check format tidy-fix
@@ -33,12 +33,12 @@ all: $(TARGET)
 check: format-check tidy-check
 
 format-check:
-	@echo "\n--- Checking formatting with clang-format ---"
+	@echo "--- Checking formatting with clang-format ---"
 	@clang-format --style=file --dry-run -Werror $(CHECK_FILES)
 	@echo "Formatting is correct."
 
 tidy-check:
-	@echo "\n--- Checking for lints with clang-tidy ---"
+	@echo "--- Checking for lints with clang-tidy ---"
 	@clang-tidy $(TIDY_FILES) -- $(CFLAGS)
 	@echo "Clang-tidy found no issues."
 
@@ -64,7 +64,7 @@ test: $(TEST_TARGETS)
 	done
 	@echo "--- All tests completed successfully ---"
 
-$(BUILD_DIR)/%: $(TEST_SRC_DIR)/%.c $(LIB_OBJ)
+$(BUILD_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJ)
 	@mkdir -p $(BUILD_DIR)
 	@echo "Building and linking test: $@"
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
