@@ -1,5 +1,5 @@
-#ifndef COMPILER_FILE_WRITER_H
-#define COMPILER_FILE_WRITER_H
+#ifndef COMPILER_IO_FILE_WRITER_H
+#define COMPILER_IO_FILE_WRITER_H
 
 #include <stdio.h>
 

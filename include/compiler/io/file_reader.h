@@ -1,5 +1,5 @@
-#ifndef COMPILER_FILE_READER_H
-#define COMPILER_FILE_READER_H
+#ifndef COMPILER_IO_FILE_READER_H
+#define COMPILER_IO_FILE_READER_H
 
 #include <stdio.h>
 
