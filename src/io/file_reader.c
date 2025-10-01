@@ -1,4 +1,4 @@
-#include "compiler/file_reader.h"
+#include "compiler/io/file_reader.h"
 
 #include <errno.h>
 #include <stddef.h>

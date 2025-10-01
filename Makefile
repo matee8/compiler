@@ -12,19 +12,23 @@ CFLAGS = -Wall -Werror -Wextra -pedantic --std=c23 -g -I$(INC_DIR) -MMD -MP
 LDFLAGS =
 LDLIBS =
 
-APP_SRC = $(wildcard $(BIN_DIR)/*.c)
-LIB_SRC = $(wildcard $(SRC_DIR)/*.c)
-TEST_SRC = $(wildcard $(TEST_DIR)/*.c)
+VPATH = $(SRC_DIR):$(BIN_DIR)
 
-APP_OBJ = $(patsubst $(BIN_DIR)/%.c, $(OBJ_DIR)/%.o, $(APP_SRC))
-LIB_OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(LIB_SRC))
+APP_SRC := $(wildcard $(BIN_DIR)/*.c)
+LIB_SRC := $(shell find $(SRC_DIR) -type f -name '*.c')
+TEST_SRC := $(shell find $(TEST_DIR) -type f -name '*.c')
+ALL_SRC := $(APP_SRC) $(LIB_SRC)
 
-OBJ = $(APP_OBJ) $(LIB_OBJ)
+APP_OBJ := $(patsubst $(BIN_DIR)/%.c, $(OBJ_DIR)/%.o, $(APP_SRC))
+LIB_OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(LIB_SRC))
+OBJ := $(APP_OBJ) $(LIB_OBJ)
 
-TEST_TARGETS = $(patsubst $(TEST_DIR)/%.c, $(BUILD_DIR)/%, $(TEST_SRC))
+TARGET = $(BUILD_DIR)/$(PROJECT_NAME)
 
-CHECK_FILES = $(wildcard $(BIN_DIR)/*.c $(SRC_DIR)/*.c $(TEST_DIR)/*.c $(INC_DIR)/compiler/*.h)
-TIDY_FILES = $(APP_SRC) $(LIB_SRC) $(TEST_SRC)
+TEST_TARGETS := $(patsubst $(TEST_DIR)/%.c, $(BUILD_DIR)/%, $(TEST_SRC))
+
+CHECK_FILES := $(shell find $(BIN_DIR) $(SRC_DIR) $(TEST_DIR) -type f -name '*.c') $(shell find $(INC_DIR) -type f -name '*.h')
+TIDY_FILES := $(ALL_SRC) $(TEST_SRC)
 
 .PHONY: all test clean check format-check tidy-check format tidy-fix
 
@@ -42,7 +46,6 @@ tidy-check:
 	@clang-tidy $(TIDY_FILES) -- $(CFLAGS)
 	@echo "Clang-tidy found no issues."
 
-
 format:
 	@echo "--- Applying clang-format style ---"
 	@clang-format -i $(CHECK_FILES)
@@ -50,7 +53,6 @@ format:
 tidy-fix:
 	@echo "--- Applying clang-tidy fixes ---"
 	@clang-tidy $(TIDY_CHECKS) -fix $(TIDY_FILES) -- $(CFLAGS)
-
 
 $(TARGET): $(OBJ)
 	@mkdir -p $(BUILD_DIR)
@@ -64,19 +66,14 @@ test: $(TEST_TARGETS)
 	done
 	@echo "--- All tests completed successfully ---"
 
-$(BUILD_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJ)
-	@mkdir -p $(BUILD_DIR)
+$(TEST_TARGETS): $(BUILD_DIR)/%: $(TEST_DIR)/%.c $(LIB_OBJ)
+	@mkdir -p $(dir $@)
 	@echo "Building and linking test: $@"
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	@echo "Compiling library: $<"
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_DIR)/%.o: $(BIN_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	@echo "Compiling application: $<"
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@echo "Compiling: $<"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

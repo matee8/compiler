@@ -1,4 +1,4 @@
-#include "compiler/file_writer.h"
+#include "compiler/io/file_writer.h"
 
 #include <errno.h>
 #include <stddef.h>

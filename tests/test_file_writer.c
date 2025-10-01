@@ -1,4 +1,4 @@
-#include "compiler/file_writer.h"
+#include "compiler/io/file_writer.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "compiler/file_reader.h"
+#include "compiler/io/file_reader.h"
 
 #define RUN_TEST(test)                          \
     do {                                        \
