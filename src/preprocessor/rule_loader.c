@@ -109,10 +109,10 @@ static int parse_line_as_rule(char* line, struct rule** out_rule) {
         return -ENOMEM;
     }
 
-    *new_rule = (struct rule){
-        .pattern = strdup(pattern_str),
-        .replacement = strdup(replacement_str),
-    };
+    memset(new_rule, 0, sizeof(*new_rule));
+
+    new_rule->pattern = strdup(pattern_str);
+    new_rule->replacement = strdup(replacement_str);
 
     if (!new_rule->pattern || !new_rule->replacement) {
         free_single_rule(new_rule);
@@ -120,7 +120,7 @@ static int parse_line_as_rule(char* line, struct rule** out_rule) {
     }
 
     int regex_ret = regcomp(&new_rule->compiled_regex, new_rule->pattern,
-                            REG_EXTENDED | REG_NOSUB);
+                            REG_EXTENDED | REG_NEWLINE);
     if (regex_ret != 0) {
         char err_buf[256];
         regerror(regex_ret, &new_rule->compiled_regex, err_buf,
