@@ -8,7 +8,7 @@ OBJ_DIR = obj
 BUILD_DIR = build
 
 CC = clang
-CFLAGS = -Wall -Werror -Wextra -pedantic --std=c23 -g -I$(INC_DIR) -MMD -MP
+CFLAGS = -Wall -Werror -Wextra -pedantic --std=c23 -g -I$(INC_DIR) -MMD -MP -D_POSIX_C_SOURCE=200809L
 LDFLAGS =
 LDLIBS =
 
