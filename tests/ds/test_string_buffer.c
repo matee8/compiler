@@ -155,6 +155,50 @@ void test_append_empty_string_is_a_noop(void) {
     string_buffer_destroy(&sb);
 }
 
+void test_to_cstr_from_sso_succeeds(void) {
+    struct string_buffer sb;
+    string_buffer_init(&sb);
+    string_buffer_append_cstr(&sb, "sso_string");
+
+    assert(sb.on_heap == false);
+
+    char* owned_str = string_buffer_to_cstr(&sb);
+    assert(owned_str != nullptr);
+    assert(strcmp(owned_str, "sso_string") == 0);
+
+    assert(sb.len == 0);
+    assert(sb.on_heap == false);
+    assert(string_buffer_get_cstr(&sb)[0] == '\0');
+
+    free(owned_str);
+}
+
+void test_to_cstr_from_heap_succeeds(void) {
+    struct string_buffer sb;
+    string_buffer_init(&sb);
+
+    char large_content[100];
+    memset(large_content, 'z', 99);
+    large_content[99] = '\0';
+    string_buffer_append_cstr(&sb, large_content);
+
+    assert(sb.on_heap == true);
+
+    char* owned_str = string_buffer_to_cstr(&sb);
+    assert(owned_str != nullptr);
+    assert(strcmp(owned_str, large_content) == 0);
+
+    assert(sb.len == 0);
+    assert(sb.on_heap == false);
+    assert(string_buffer_get_cstr(&sb)[0] == '\0');
+
+    free(owned_str);
+}
+
+void test_to_cstr_on_null_buffer(void) {
+    assert(string_buffer_to_cstr(nullptr) == nullptr);
+}
+
 int main(void) {
     puts("Starting string buffer tests.\n");
 
@@ -173,6 +217,10 @@ int main(void) {
     RUN_TEST(test_append_fails_on_null_buffer);
     RUN_TEST(test_append_fails_on_null_content);
     RUN_TEST(test_append_empty_string_is_a_noop);
+
+    RUN_TEST(test_to_cstr_from_sso_succeeds);
+    RUN_TEST(test_to_cstr_from_heap_succeeds);
+    RUN_TEST(test_to_cstr_on_null_buffer);
 
     puts("\nAll string buffer tests passed successfully!");
 

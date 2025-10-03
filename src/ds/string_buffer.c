@@ -103,6 +103,30 @@ static size_t get_capacity(const struct string_buffer* sb) {
     return SSO_SIZE;
 }
 
+char* string_buffer_to_cstr(struct string_buffer* sb) {
+    if (!sb) {
+        return nullptr;
+    }
+
+    char* result_ptr = nullptr;
+
+    if (sb->on_heap) {
+        result_ptr = realloc(sb->data.heap.ptr, sb->len + 1);
+        if (!result_ptr) {
+            return nullptr;
+        }
+    } else {
+        result_ptr = strdup(sb->data.sso);
+        if (!result_ptr) {
+            return nullptr;
+        }
+    }
+
+    (void)string_buffer_init(sb);
+
+    return result_ptr;
+}
+
 static int ensure_capacity(struct string_buffer* sb, size_t additional_len) {
     const size_t required_len = sb->len + additional_len;
     const size_t current_capacity = get_capacity(sb);
