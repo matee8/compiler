@@ -94,7 +94,7 @@ static int parse_line_as_rule(char* line, struct rule** out_rule) {
         return -ENOENT;
     }
 
-    char* comma = strchr(line, ',');
+    char* comma = strrchr(line, ',');
     if (!comma) {
         (void)fprintf(stderr, "Skipping malformed rule (no comma): %s\n", line);
         return -ENOENT;
