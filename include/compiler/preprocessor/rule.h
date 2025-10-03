@@ -7,6 +7,6 @@ struct rule {
     char* pattern;
     char* replacement;
     regex_t compiled_regex;
-}
+};
 
 #endif
