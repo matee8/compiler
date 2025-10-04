@@ -2,7 +2,6 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,7 +14,7 @@
 
 struct best_match {
     const struct rule* rule;
-    regmatch_t pmatch;
+    PCRE2_SIZE ovector[2];
     bool is_found;
 };
 
@@ -79,7 +78,7 @@ cleanup_sb:
 
 static struct best_match find_earliest_match(const char* search_pos,
                                              const struct vector* rules) {
-    struct best_match match = {.is_found = false, .pmatch = {.rm_so = INT_MAX}};
+    struct best_match match = {.is_found = false, .ovector = {PCRE2_SIZE_MAX}};
 
     pcre2_match_data* match_data = nullptr;
 
@@ -102,9 +101,9 @@ static struct best_match find_earliest_match(const char* search_pos,
         if (rc >= 0) {
             PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
 
-            if (ovector[0] < (size_t)match.pmatch.rm_so) {
-                match.pmatch.rm_so = (regoff_t)ovector[0];
-                match.pmatch.rm_eo = (regoff_t)ovector[1];
+            if (ovector[0] < match.ovector[0]) {
+                match.ovector[0] = ovector[0];
+                match.ovector[1] = ovector[1];
                 match.rule = r;
                 match.is_found = true;
             }
@@ -122,10 +121,11 @@ static int process_match(struct string_buffer* sb,
                          const char** current_pos,
                          const struct best_match* match) {
     int ret = 0;
+    size_t match_start = match->ovector[0];
+    size_t match_end = match->ovector[1];
 
-    if (match->pmatch.rm_so > 0) {
-        ret =
-            string_buffer_append(sb, *current_pos, (size_t)match->pmatch.rm_so);
+    if (match_start > 0) {
+        ret = string_buffer_append(sb, *current_pos, match_start);
         if (ret != 0) {
             return ret;
         }
@@ -136,7 +136,7 @@ static int process_match(struct string_buffer* sb,
         return ret;
     }
 
-    const char* next_pos = *current_pos + match->pmatch.rm_eo;
+    const char* next_pos = *current_pos + match_end;
 
     if (next_pos == *current_pos && *next_pos != '\0') {
         ret = string_buffer_append(sb, next_pos, 1);
