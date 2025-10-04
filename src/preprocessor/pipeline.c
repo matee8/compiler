@@ -1,11 +1,13 @@
 #include "compiler/preprocessor/pipeline.h"
 
-#include <stdio.h>
-
 #include <errno.h>
 #include <limits.h>
 #include <regex.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <pcre2.h>
 
 #include "compiler/ds/string_buffer.h"
 #include "compiler/ds/vector.h"
@@ -79,17 +81,38 @@ static struct best_match find_earliest_match(const char* search_pos,
                                              const struct vector* rules) {
     struct best_match match = {.is_found = false, .pmatch = {.rm_so = INT_MAX}};
 
+    pcre2_match_data* match_data = nullptr;
+
     for (size_t i = 0; i < vector_len(rules); ++i) {
         const struct rule* r = (const struct rule*)vector_get(rules, i);
-        regmatch_t current_match;
 
-        if (regexec(&r->compiled_regex, search_pos, 1, &current_match,
-                    REG_NOTBOL) == 0 &&
-            current_match.rm_so < match.pmatch.rm_so) {
-            match.rule = r;
-            match.pmatch = current_match;
-            match.is_found = true;
+        if (match_data == nullptr) {
+            match_data = pcre2_match_data_create_from_pattern(r->compiled_regex,
+                                                              nullptr);
+
+            if (match_data == nullptr) {
+                break;
+            }
         }
+
+        int rc = pcre2_match(r->compiled_regex, (PCRE2_SPTR)search_pos,
+                             strlen(search_pos), 0, PCRE2_NOTBOL, match_data,
+                             nullptr);
+
+        if (rc >= 0) {
+            PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(match_data);
+
+            if (ovector[0] < (size_t)match.pmatch.rm_so) {
+                match.pmatch.rm_so = (regoff_t)ovector[0];
+                match.pmatch.rm_eo = (regoff_t)ovector[1];
+                match.rule = r;
+                match.is_found = true;
+            }
+        }
+    }
+
+    if (match_data) {
+        pcre2_match_data_free(match_data);
     }
 
     return match;

@@ -1,11 +1,12 @@
 #include "compiler/preprocessor/rule_loader.h"
 
 #include <errno.h>
-#include <regex.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <pcre2.h>
 
 #include "compiler/ds/vector.h"
 #include "compiler/io/file_reader.h"
@@ -119,14 +120,17 @@ static int parse_line_as_rule(char* line, struct rule** out_rule) {
         return -ENOMEM;
     }
 
-    int regex_ret = regcomp(&new_rule->compiled_regex, new_rule->pattern,
-                            REG_EXTENDED | REG_NEWLINE);
-    if (regex_ret != 0) {
-        char err_buf[256];
-        regerror(regex_ret, &new_rule->compiled_regex, err_buf,
-                 sizeof(err_buf));
-        (void)fprintf(stderr, "Failed to compile regex '%s': %s\n",
-                      new_rule->pattern, err_buf);
+    int error_code = 0;
+    PCRE2_SIZE error_offset = 0;
+    new_rule->compiled_regex =
+        pcre2_compile((PCRE2_SPTR)new_rule->pattern, PCRE2_ZERO_TERMINATED,
+                      PCRE2_UCP, &error_code, &error_offset, nullptr);
+
+    if (new_rule->compiled_regex == nullptr) {
+        PCRE2_UCHAR buffer[256];
+        pcre2_get_error_message(error_code, buffer, sizeof(buffer));
+        (void)fprintf(stderr, "Failed to compile regex at offset %zu: %s\n",
+                      error_offset, (char*)buffer);
         free_single_rule(new_rule);
         return -EINVAL;
     }
@@ -139,7 +143,9 @@ static void free_single_rule(struct rule* r) {
     if (!r) {
         return;
     }
-    regfree(&r->compiled_regex);
+    if (r->compiled_regex) {
+        pcre2_code_free(r->compiled_regex);
+    }
     free(r->pattern);
     free(r->replacement);
     free(r);

@@ -1,12 +1,12 @@
 #ifndef COMPILER_PREPROCESSOR_RULE_H
 #define COMPILER_PREPROCESSOR_RULE_H
 
-#include <regex.h>
+#include <pcre2.h>
 
 struct rule {
     char* pattern;
     char* replacement;
-    regex_t compiled_regex;
+    pcre2_code* compiled_regex;
 };
 
 #endif

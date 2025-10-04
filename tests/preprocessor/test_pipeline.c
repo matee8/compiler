@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <pcre2.h>
+
 #define RUN_TEST(test)                          \
     do {                                        \
         printf("Running test: %s...\n", #test); \
@@ -20,7 +22,15 @@ static struct rule* create_rule(const char* pattern, const char* replacement) {
     r->pattern = strdup(pattern);
     r->replacement = strdup(replacement);
     assert(r->pattern && r->replacement);
-    assert(regcomp(&r->compiled_regex, pattern, REG_EXTENDED) == 0);
+
+    int error_code = 0;
+    PCRE2_SIZE error_offset = 0;
+    r->compiled_regex =
+        pcre2_compile((PCRE2_SPTR)pattern, PCRE2_ZERO_TERMINATED, PCRE2_UCP,
+                      &error_code, &error_offset, nullptr);
+
+    assert(r->compiled_regex != NULL);
+
     return r;
 }
 
