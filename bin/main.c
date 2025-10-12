@@ -96,3 +96,14 @@ cleanup_rules:
 
     return exit_code;
 }
+
+/* 3. gyakorlat
+ *
+ * Lexer osztály:
+ *   - String content: "IF a==2 THEN b=20 ELSE b=12"
+ *   - List<String> symbolTable
+ *   - int symbolTableIndex
+ *   - Dictionary<string, string> replaces
+ *   - void replaceKeywords(void)
+ *   - String createSymbolTableIndex(string symbol)
+ */

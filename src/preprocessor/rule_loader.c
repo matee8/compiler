@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <pcre2.h>
+#include "pcre2.h"
 
 #include "compiler/ds/vector.h"
 #include "compiler/io/file_reader.h"
