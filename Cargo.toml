@@ -85,5 +85,5 @@ missing_errors_doc = "allow"
 tempfile = "3.23.0"
 
 [dependencies]
-regex = "1.12.2"
-thiserror = "2.0.17"
+regex = "~1"
+thiserror = "~2"
