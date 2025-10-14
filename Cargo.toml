@@ -3,6 +3,7 @@ name = "compiler"
 version = "0.1.0"
 authors = ["matee8 <graves-bluff-pesky@duck.com>"]
 edition = "2024"
+rust-version = "1.85.1"
 
 repository = "https://github.com/matee8/compiler.git"
 readme = "README.md"
