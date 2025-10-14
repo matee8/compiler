@@ -35,6 +35,80 @@ pub fn parse_rules(content: &str) -> Result<Vec<Rule<'_>>, ParseError<'_>> {
         .collect()
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+enum Strategy {
+    #[default]
+    Simple,
+}
+
+#[derive(Debug)]
+pub struct Preprocessor<'src> {
+    rules: Vec<Rule<'src>>,
+    strategy: Strategy,
+}
+
+impl<'src> Preprocessor<'src> {
+    #[must_use]
+    #[inline]
+    pub fn new(rules: Vec<Rule<'src>>) -> Self {
+        Self {
+            rules,
+            strategy: Strategy::default(),
+        }
+    }
+
+    #[must_use]
+    #[inline]
+    pub fn run(&self, input: &str) -> String {
+        match self.strategy {
+            Strategy::Simple => self.run_simple(input),
+        }
+    }
+
+    #[expect(
+        clippy::string_slice,
+        reason = r#"every index is derived from the regex crate's methods,
+                    which are guaranteed to return valid UTF-8 character
+                    boundaries."#
+    )]
+    fn run_simple(&self, input: &str) -> String {
+        let mut output = String::with_capacity(input.len());
+        let mut current_pos = 0;
+
+        while current_pos < input.len() {
+            let earliest_match = self
+                .rules
+                .iter()
+                .filter_map(|rule| {
+                    rule.compiled_regex
+                        .find_at(input, current_pos)
+                        .map(|match_info| (match_info, rule))
+                })
+                .min_by_key(|&(match_info, _)| match_info.start());
+
+            if let Some((match_info, matched_rule)) = earliest_match {
+                output.push_str(&input[current_pos..match_info.start()]);
+                output.push_str(matched_rule.replacement);
+                current_pos = match_info.end();
+
+                if match_info.start() == match_info.end() {
+                    if let Some(char) = input[current_pos..].chars().next() {
+                        output.push(char);
+                        current_pos += char.len_utf8();
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                output.push_str(&input[current_pos..]);
+                break;
+            }
+        }
+
+        output
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::preprocessor::{self, ParseError, rule::InvalidRegex};
