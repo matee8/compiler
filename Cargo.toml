@@ -1,21 +1,16 @@
 [package]
-name = ""
+name = "compiler"
 version = "0.1.0"
 authors = ["matee8 <graves-bluff-pesky@duck.com>"]
 edition = "2024"
-rust-version = ""
 
-repository = ""
+repository = "https://github.com/matee8/compiler.git"
 readme = "README.md"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 
-description = ""
-keywords = []
-categories = []
-
-[features]
-
-[dependencies]
+description = "A compiler built as a learning project for a university compilers course, written in Rust."
+keywords = ["cli", "compiler"]
+categories = ["Compilers"]
 
 [lints.rust]
 absolute-paths-not-starting-with-crate = "warn"
@@ -83,3 +78,4 @@ question_mark_used = "allow"
 separated_literal_suffix = "allow"
 map_err_ignore = "allow"
 arbitrary_source_item_ordering = "allow"
+missing_errors_doc = "allow"
