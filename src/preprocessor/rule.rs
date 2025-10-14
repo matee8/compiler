@@ -36,3 +36,35 @@ impl<'src> Rule<'src> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::preprocessor::rule::Rule;
+
+    #[test]
+    fn new_succeeds_with_valid_pattern() {
+        let pattern = "^start";
+        let replacement = "end";
+
+        let result = Rule::new(pattern, replacement);
+
+        assert!(result.is_ok());
+        let rule = result.unwrap();
+        assert_eq!(rule.pattern, pattern);
+        assert_eq!(rule.replacement, replacement);
+        assert!(rule.compiled_regex.is_match("start of line"));
+    }
+
+    #[test]
+    fn new_fails_with_invalid_pattern() {
+        let invalid_pattern = "(\\d+";
+        let replacement = "number";
+
+        let result = Rule::new(invalid_pattern, replacement);
+
+        assert!(result.is_err());
+        let error = result.unwrap_err();
+
+        assert_eq!(error.pattern, invalid_pattern);
+    }
+}
