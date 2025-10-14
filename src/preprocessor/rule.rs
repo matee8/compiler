@@ -5,8 +5,8 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 #[error("invalid regex pattern '{pattern}': {source}")]
 pub struct InvalidRegex<'pattern> {
-    pattern: &'pattern str,
-    source: regex::Error,
+    pub pattern: &'pattern str,
+    pub source: regex::Error,
 }
 
 #[non_exhaustive]
