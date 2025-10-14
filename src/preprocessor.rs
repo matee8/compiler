@@ -111,7 +111,9 @@ impl<'src> Preprocessor<'src> {
 
 #[cfg(test)]
 mod tests {
-    use crate::preprocessor::{self, ParseError, rule::InvalidRegex};
+    use crate::preprocessor::{
+        self, ParseError, Preprocessor, rule::InvalidRegex,
+    };
 
     #[test]
     fn parse_rules_succeeds_with_valid_input() {
@@ -180,5 +182,93 @@ mod tests {
         assert_eq!(rules[1].replacement, "replacement");
         assert_eq!(rules[2].pattern, " c");
         assert_eq!(rules[2].replacement, "d ");
+    }
+
+    #[test]
+    fn run_returns_input_when_no_rules_match() {
+        let rules_content = "a,x\nb,y";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "cde fgh";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, input);
+    }
+
+    #[test]
+    fn run_performs_single_simple_replacement() {
+        let rules_content = "apple,orange";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "an apple a day";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, "an orange a day");
+    }
+
+    #[test]
+    fn run_performs_multiple_non_overlapping_replacements() {
+        let rules_content = "a,X\nb,Y";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "ab cde ba";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, "XY cde YX");
+    }
+
+    #[test]
+    fn run_chooses_earliest_starting_match_when_rules_overlap() {
+        let rules_content = "b,Y\nab,X";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "cabcd";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, "cXcd");
+    }
+
+    #[test]
+    fn run_processes_matches_sequentially_on_original_input() {
+        let rules_content = "a,b\nb,c";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "aba";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, "bcb");
+
+        let input2 = "aa";
+        let output2 = preprocessor.run(input2);
+        assert_eq!(output2, "bb");
+    }
+
+    #[test]
+    fn run_handles_zero_length_match_at_start_without_looping() {
+        let rules_content = "^,START ";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "text";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, "START text");
+    }
+
+    #[test]
+    fn run_handles_zero_length_match_in_middle_without_looping() {
+        let rules_content = r"\b, | ";
+        let rules = preprocessor::parse_rules(rules_content).unwrap();
+        let preprocessor = Preprocessor::new(rules);
+        let input = "one two";
+
+        let output = preprocessor.run(input);
+
+        assert_eq!(output, " | one |   | two | ");
     }
 }
